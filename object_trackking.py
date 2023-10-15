@@ -47,7 +47,7 @@ def track_object(video_file):
 
 if __name__ == "__main__":
     # Video dosyasını belirtin
-    video_file = "test.mp4"
+    video_file = "my_video.mp4"
 
     # Nesneyi takip edin
     track_object(video_file)
