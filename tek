@@ -1,0 +1,72 @@
+import cv2
+
+# Open the video file
+video_capture = cv2.VideoCapture(r'C:\Users\cengh\Downloads\video (2160p).mp4')
+
+# Check if the video file opened successfully
+if not video_capture.isOpened():
+    print("Error: Could not open video file.")
+    exit()
+
+# Read the first frame to get the dimensions of the video
+_, prev_frame = video_capture.read()
+height, width = prev_frame.shape[:2]
+
+# Calculate the midpoint of the video frame
+midpoint_height = height // 2
+midpoint_width = width // 2
+
+# Font settings for notification text
+font = cv2.FONT_HERSHEY_SIMPLEX
+font_scale = 1
+font_color = (0, 0, 255)  # Red color
+thickness = 2
+
+# Process each frame of the video
+while video_capture.isOpened():
+    # Read a frame from the video
+    ret, frame = video_capture.read()
+
+    # If frame is not successfully read, break the loop
+    if not ret:
+        break
+
+    # Calculate the absolute difference between previous frame and current frame for bottom-left part
+    diff_bottom_left = cv2.absdiff(frame[midpoint_height:, :midpoint_width], prev_frame[midpoint_height:, :midpoint_width])
+
+    # Calculate the absolute difference between previous frame and current frame for top-left part
+    diff_top_left = cv2.absdiff(frame[:midpoint_height, :midpoint_width], prev_frame[:midpoint_height, :midpoint_width])
+
+    # Calculate the absolute difference between previous frame and current frame for top-right part
+    diff_top_right = cv2.absdiff(frame[:midpoint_height, midpoint_width:], prev_frame[:midpoint_height, midpoint_width:])
+
+    # Check if there is any pixel change in the bottom-left part
+    if cv2.countNonZero(cv2.cvtColor(diff_bottom_left, cv2.COLOR_BGR2GRAY)) > 0:
+        # Print notification on the screen at bottom-left
+        cv2.putText(frame, 'Movement Detected (Bottom Left)', (50, height - 50), font, font_scale, font_color, thickness)
+
+    # Check if there is any pixel change in the top-left part
+    if cv2.countNonZero(cv2.cvtColor(diff_top_left, cv2.COLOR_BGR2GRAY)) > 0:
+        # Print notification on the screen at top-left
+        cv2.putText(frame, 'Movement Detected (Top Left)', (50, 50), font, font_scale, font_color, thickness)
+
+    # Check if there is any pixel change in the top-right part
+    if cv2.countNonZero(cv2.cvtColor(diff_top_right, cv2.COLOR_BGR2GRAY)) > 0:
+        # Print notification on the screen at top-right
+        cv2.putText(frame, 'Movement Detected (Top Right)', (width - 300, 50), font, font_scale, font_color, thickness)
+
+    # Display the frame with notifications
+    cv2.imshow('Frame', frame)
+
+    # Store the current frame as previous frame for the next iteration
+    prev_frame = frame.copy()
+
+    # Check for the 'q' key press to exit the loop
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+# Release the VideoCapture object
+video_capture.release()
+
+# Close all OpenCV windows
+cv2.destroyAllWindows()
