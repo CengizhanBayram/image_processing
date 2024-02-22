@@ -1,0 +1,59 @@
+import cv2
+
+# Function to send notification
+def send_notification():
+    print("Sending notification to top right")
+
+# Open the video file
+video_capture = cv2.VideoCapture(r'C:\Users\cengh\Downloads\pexels-aerialwingsdesigns-10821028 (2160p).mp4')
+
+# Check if the video file opened successfully
+if not video_capture.isOpened():
+    print("Error: Could not open video file.")
+    exit()
+
+# Read the first frame to get the dimensions of the video
+_, prev_frame = video_capture.read()
+height, width = prev_frame.shape[:2]
+
+# Calculate the midpoint of the video frame
+midpoint_height = height // 2
+midpoint_width = width // 2
+
+# Process each frame of the video
+while True:
+    # Read a frame from the video
+    ret, frame = video_capture.read()
+
+    # If frame is not successfully read, break the loop
+    if not ret:
+        break
+
+    # Split the frame into four parts
+    top_left = frame[:midpoint_height, :midpoint_width]
+    top_right = frame[:midpoint_height, midpoint_width:]
+    bottom_left = frame[midpoint_height:, :midpoint_width]
+    bottom_right = frame[midpoint_height:, midpoint_width:]
+
+    # Calculate the absolute difference between previous frame and current frame
+    diff = cv2.absdiff(bottom_left, prev_frame[midpoint_height:, :midpoint_width])
+
+    # Check if there is any pixel change in the bottom-left part
+    if cv2.countNonZero(cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)) > 0:
+        send_notification()
+
+    # Display the original frame
+    cv2.imshow('Original Frame', frame)
+
+    # Store the current frame as previous frame for the next iteration
+    prev_frame = frame.copy()
+
+    # Check for the 'q' key press to exit the loop
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+# Release the VideoCapture object
+video_capture.release()
+
+# Close all OpenCV windows
+cv2.destroyAllWindows()
